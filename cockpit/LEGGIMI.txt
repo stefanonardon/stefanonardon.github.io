@@ -1,0 +1,15 @@
+COCKPIT - installazione su Android (versione vuota, senza attività)
+
+1. Servono questi file (index.html, manifest.webmanifest, sw.js, icon-192.png, icon-512.png) pubblicati su un indirizzo HTTPS.
+   Metodo più semplice: vai su https://app.netlify.com/drop, trascina la cartella estratta e ottieni un indirizzo.
+   In alternativa GitHub Pages o qualsiasi hosting statico.
+2. Apri l'indirizzo con Chrome sul telefono, menu (tre puntini) > "Aggiungi a schermata Home" / "Installa app".
+3. I dati restano sul telefono (memoria locale di Chrome). Non vengono inviati a nessun server.
+
+PRIMO AVVIO: l'app è vuota. Per caricare le tue attività: "Dati" > "Scegli file..." e seleziona il file cockpit-attivita-notion.json (tienilo sul telefono o su Drive, non pubblicarlo).
+
+BACKUP: dentro l'app, pulsante "Dati" > "Esporta file (.json)" > nel menu di condivisione scegli Drive.
+Per ripristinare: "Dati" > "Scegli file..." e seleziona il .json (unisci o sostituisci).
+Se cancelli i dati di navigazione di Chrome o disinstalli l'app, i dati locali si perdono: fai il backup ogni tanto.
+
+Senza hosting: puoi anche aprire index.html direttamente dal telefono, ma non si installa come app e Chrome può non conservare i dati in modo affidabile.
