@@ -215,6 +215,14 @@ body::before{background:var(--hdr)}
 .adb.az{border-left-color:var(--rep);background:var(--mt5)}
 .n{background:var(--mt0);color:var(--accent)}
 .row.is-plan{background:var(--mt0)}
+/* badges and definitions */
+.bdg{display:inline-flex;align-items:center;font-size:11px;font-weight:800;line-height:1;padding:3px 6px;border-radius:5px;letter-spacing:.02em;vertical-align:middle;white-space:nowrap}
+.bdg.bn{background:var(--mt1);color:var(--m1)}
+.bdg.bd{background:var(--mt5);color:var(--m5)}
+.bdg+.bdg{margin-left:4px}
+.chip .bdg{margin-left:6px;flex:none}
+.chipn{background:none;padding:0 2px;gap:4px}
+.qdef{margin:-2px 0 8px;font-size:13px;color:var(--ink);opacity:.85}
 /* notes and files */
 .rnote{font-size:13px;color:var(--muted);margin-top:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;white-space:pre-line}
 .chipn{display:inline-flex;align-items:center;gap:4px;border:0;min-height:30px;padding:0 9px;border-radius:8px;font-size:12.5px;font-weight:650;background:var(--mt1);color:var(--m1)}
@@ -277,6 +285,7 @@ function hms(ms){var s=Math.max(0,Math.floor(ms/1000));return pad(Math.floor(s/3
 var newId=function(){return 'x'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)};
 var MI=function(n){if(!n)return '';var i=MACROS.indexOf(n);if(i<0){i=0;for(var k=0;k<n.length;k++)i=(i*31+n.charCodeAt(k))>>>0}return 'm'+(i%8)};
 var rowColor=function(it){return it.prio?'var(--c-'+{IU:'iu',U:'u',N:'n',I:'i'}[it.prio]+')':it.macro?'var(--'+MI(it.macro)+')':it.type==='ricorrente'?'var(--accent)':'var(--line)'};
+function badges(it){var h='';if(it.notes.length)h+='<span class="bdg bn" role="img" aria-label="'+it.notes.length+' note">N'+(it.notes.length>1?' '+it.notes.length:'')+'</span>';if(it.files.length)h+='<span class="bdg bd" role="img" aria-label="'+it.files.length+' documenti">D'+(it.files.length>1?' '+it.files.length:'')+'</span>';return h}
 function fsize(n){return n>=1048576?(n/1048576).toFixed(1)+' MB':Math.max(1,Math.round(n/1024))+' KB'}
 function noteList(o){var n=Array.isArray(o.notes)?o.notes.filter(function(x){return x&&typeof x.text==='string'&&x.text.trim()}).map(function(x){return {id:String(x.id||newId()),t:+x.t||Date.now(),text:x.text}}):[];if(!n.length&&typeof o.note==='string'&&o.note.trim())n.push({id:newId(),t:+o.created||Date.now(),text:o.note});return n}
 function fileList(o){return Array.isArray(o.files)?o.files.filter(function(f){return f&&f.id&&f.name}).map(function(f){return {id:String(f.id),name:String(f.name),type:String(f.type||''),size:+f.size||0,added:+f.added||Date.now()}}):[]}
@@ -292,7 +301,7 @@ function dataURLtoBlob(u){try{var m=/^data:([^;,]*)(;base64)?,([\s\S]*)$/.exec(u
 
 /* ---------- constants ---------- */
 var MACROS=['Lavori generici','Ufficio','Assessora','Idraulici','Elettricisti','Falegname','Gestione mail','Riunioni'];
-var PR={IU:{n:'Importante e urgente',c:'q-iu'},U:{n:'Urgente ma non importante',c:'q-u'},N:{n:'Non urgente e non importante',c:'q-n'},I:{n:'Non urgente ma importante',c:'q-i'}};
+var PR={IU:{n:'Importante e urgente',c:'q-iu',d:'Da fare subito: scadenza vicina o problema in corso.'},U:{n:'Urgente ma non importante',c:'q-u',d:'Chiede attenzione ora ma pesa poco: sbrigalo in fretta o delegalo.'},N:{n:'Non urgente e non importante',c:'q-n',d:'Nessuna scadenza né peso: fallo se c’è tempo, rimandalo o eliminalo.'},I:{n:'Non urgente ma importante',c:'q-i',d:'Conta per i tuoi obiettivi ma non ha fretta: pianificalo in calendario.'}};
 var PRO=['IU','U','N','I'];
 var PW={IU:0,I:1,U:2,N:3};
 var TL0=6,TL1=22,PXH=56;
@@ -432,7 +441,7 @@ function row(it,o){
   if(it.resp.length)m.push('<span>'+esc(it.resp.join(', '))+'</span>');
   if(!o.time&&it.start)m.push('<span class="num">'+esc(dateText(it))+'</span>');
   m.push(durChip(it));
-  if(it.notes.length||it.files.length)m.push('<button class="chipn" data-a="edit" data-id="'+it.id+'" data-focus="notes" aria-label="Note e allegati">'+(it.notes.length?IC.note+it.notes.length:'')+(it.files.length?IC.clip+it.files.length:'')+'</button>');
+  if(it.notes.length||it.files.length)m.push('<button class="chipn" data-a="edit" data-id="'+it.id+'" data-focus="notes" aria-label="Note e allegati">'+badges(it)+'</button>');
   return '<li class="row'+(it.done?' is-done':'')+(o.plan?' is-plan':'')+'" style="--rc:'+rowColor(it)+'" data-a="edit" data-id="'+it.id+'">'
     +'<button class="chk" data-a="done" data-id="'+it.id+'" aria-pressed="'+it.done+'" aria-label="Fatto: '+esc(it.title)+'"><i>'+IC.check+'</i></button>'
     +'<div><div class="rtime num">'+(o.time||'')+'</div><div class="rt">'+esc(it.title)+'</div>'+(it.notes.length?'<div class="rnote">'+esc(it.notes[0].text)+'</div>':'')+'<div class="rm">'+m.join('')+'</div></div>'
@@ -441,7 +450,7 @@ function row(it,o){
 function card(it){
   var c=it.prio?PR[it.prio].c:MI(it.macro);
   return '<li class="card '+c+'" data-a="edit" data-id="'+it.id+'"><span class="grip" data-drag="'+it.id+'" aria-label="Trascina">'+IC.grip+'</span>'
-    +'<div class="cb"><div class="ct">'+esc(it.title)+'</div><div class="cm">'+esc([it.macro,it.resp.join(', ')].filter(Boolean).join(' · '))+'</div></div></li>';
+    +'<div class="cb"><div class="ct">'+esc(it.title)+'</div><div class="cm">'+esc([it.macro,it.resp.join(', ')].filter(Boolean).join(' · '))+(badges(it)?' '+badges(it):'')+'</div></div></li>';
 }
 function opts(list,sel){return list.map(function(o){return '<option value="'+esc(o[0])+'"'+(o[0]===sel?' selected':'')+'>'+esc(o[1])+'</option>'}).join('')}
 function backupBanner(){
@@ -508,7 +517,7 @@ function vPrio(){
   var h='<div class="bar"><label class="field" style="flex:1;min-width:160px">Macro<select data-pm="1">'+opts([['','Tutte le macro']].concat(macroList().map(function(x){return [x,x]})),S.ui.pm)+'</select></label></div>';
   h+='<div class="quads">'+PRO.map(function(k){
     var a=L.q[k]||[];
-    return '<section class="quad '+PR[k].c+'" data-drop="prio:'+k+'" aria-label="'+PR[k].n+'"><h3>'+PR[k].n+' <span class="n">'+a.length+'</span></h3>'+(a.length?'<ul class="list">'+a.map(card).join('')+'</ul>':'<p class="hint">Trascina qui un’attività.</p>')+'</section>';
+    return '<section class="quad '+PR[k].c+'" data-drop="prio:'+k+'" aria-label="'+PR[k].n+'"><h3>'+PR[k].n+' <span class="n">'+a.length+'</span></h3><p class="qdef">'+PR[k].d+'</p>'+(a.length?'<ul class="list">'+a.map(card).join('')+'</ul>':'<p class="hint">Trascina qui un’attività.</p>')+'</section>';
   }).join('')+'</div>';
   return h;
 }
@@ -525,17 +534,17 @@ function vCal(){
   }).join('')+'</div>';
   h+='<h2 class="h">'+esc(dfmt(day,{weekday:'long',day:'numeric',month:'long'}))+'</h2>';
   var ad=allDayFor(day);
-  if(ad.length)h+='<div class="ad">'+ad.map(function(i){return '<div class="adb'+(i.type==='azione'?' az':'')+'" data-a="edit" data-id="'+i.id+'" style="'+(i.done?'opacity:.55;text-decoration:line-through':'')+'">'+esc(i.title)+'</div>'}).join('')+'</div>';
+  if(ad.length)h+='<div class="ad">'+ad.map(function(i){return '<div class="adb'+(i.type==='azione'?' az':'')+'" data-a="edit" data-id="'+i.id+'" style="'+(i.done?'opacity:.55;text-decoration:line-through':'')+'">'+esc(i.title)+(badges(i)?' '+badges(i):'')+'</div>'}).join('')+'</div>';
   var tr=S.items.filter(function(i){return i.type==='azione'&&!i.done&&!i.start&&!i.sessions.length}).sort(byPrio).slice(0,30);
   h+='<h2 class="h">Da pianificare <span class="n">'+tr.length+'</span></h2>';
-  h+=tr.length?'<div class="chips">'+tr.map(function(i){return '<div class="chip '+(i.prio?PR[i.prio].c:MI(i.macro))+'" data-a="edit" data-id="'+i.id+'"><span class="grip" data-drag="'+i.id+'" aria-label="Trascina">'+IC.grip+'</span><span class="t">'+esc(i.title)+'</span></div>'}).join('')+'</div><p class="note" style="margin:-4px 0 8px">Trascina con ⠿ sull’orario o su un giorno. In alternativa tocca il nome e imposta la data.</p>':'<p class="empty">Niente da pianificare.</p>';
+  h+=tr.length?'<div class="chips">'+tr.map(function(i){return '<div class="chip '+(i.prio?PR[i.prio].c:MI(i.macro))+'" data-a="edit" data-id="'+i.id+'"><span class="grip" data-drag="'+i.id+'" aria-label="Trascina">'+IC.grip+'</span><span class="t">'+esc(i.title)+'</span>'+badges(i)+'</div>'}).join('')+'</div><p class="note" style="margin:-4px 0 8px">Trascina con ⠿ sull’orario o su un giorno. In alternativa tocca il nome e imposta la data.</p>':'<p class="empty">Niente da pianificare.</p>';
   var bl=layout(dayBlocks(day)),ht=(TL1-TL0)*PXH,g='';
   for(var x=TL0;x<=TL1;x++)g+='<div class="hr" style="top:'+(x-TL0)*PXH+'px"><em class="num">'+pad(x)+':00</em></div>';
   g+=bl.map(function(b){
     var top=Math.max(0,((new Date(b.s).getHours()*60+new Date(b.s).getMinutes())/60-TL0)*PXH),hh=Math.max(28,(b.e2-b.s)/36e5*PXH);
     var w=100/b.lanes,tt=b.kind==='plan'?hm(b.s)+'–'+hm(b.e):hm(b.s)+'–'+(b.e==null?'in corso':hm(b.e));
     return '<div class="blk '+(b.kind==='plan'?'plan':b.e==null?'run':'')+'" data-a="edit" data-id="'+b.it.id+'" style="top:'+top+'px;height:'+hh+'px;left:calc('+b.lane*w+'% + 2px);width:calc('+w+'% - 4px)">'
-      +(b.kind==='plan'?'<span class="grip" data-drag="'+b.it.id+'" aria-label="Sposta">'+IC.grip+'</span>':'')+'<div class="bt"><b>'+esc(b.it.title)+'</b><small class="num">'+tt+'</small></div></div>';
+      +(b.kind==='plan'?'<span class="grip" data-drag="'+b.it.id+'" aria-label="Sposta">'+IC.grip+'</span>':'')+'<div class="bt"><b>'+esc(b.it.title)+'</b><small class="num">'+tt+(badges(b.it)?' '+badges(b.it):'')+'</small></div></div>';
   }).join('');
   if(day===t){var n=new Date(),nm=n.getHours()*60+n.getMinutes();if(nm>=TL0*60&&nm<=TL1*60)g+='<div class="now" style="top:'+((nm/60-TL0)*PXH)+'px"></div>'}
   h+='<div class="tl" id="tl" data-drop="tl:'+day+'" style="height:'+ht+'px">'+g+'</div>';
